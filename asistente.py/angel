@@ -1,97 +1,202 @@
 import tkinter as tk
 import os
+import json
+import random
+from difflib import get_close_matches
 from PIL import Image, ImageTk
 
-# ===========================================
-# 📖 MODO SIN INTERNET
-# ===========================================
+ARCHIVO_MEMORIA = "memoria_angel.json"
+
 conocimiento = {
-    "hola": "¡Holaaa! 😊 Soy Ángel Dust. ¿Cómo estás? ✨",
-    "quién eres": "Soy Ángel Dust, ¡tu asistente personal y amiga! 💖✨",
-    "qué puedes hacer": "¡Puedo charlar contigo, contarte chistes y acompañarte! 💖✨",
-    "cuéntame un chiste": "¿Qué le dice un semáforo a otro? ¡No me mires que me estoy cambiando! 😂✨",
-    "cómo estás": "¡Muy feliz de estar contigo! 💖✨ ¿Y tú qué tal?",
-    "adiós": "¡Hasta la próxima, amigo! 👋✨ ¡Vuelve pronto!",
-    "te quiero": "¡Yo también a ti! Eres increíble 💖✨",
-    "gracias": "¡No hay de qué! Estoy aquí para ti siempre 💜✨",
-    "qué es hazbin hotel": "¡Es mi mundo favorito! 🏨✨ Un lugar donde todos podemos ser nosotros mismos 💖"
+    "hola": [
+        "Hola, soy Ángel Dust. ¿Cómo estás?",
+        "Hola, qué gusto verte. ¿En qué puedo ayudarte?",
+        "Hola, estoy feliz de hablar contigo."
+    ],
+    "quién eres": [
+        "Soy Ángel Dust, tu asistente personal y amiga.",
+        "Soy tu compañera virtual. Estoy aquí para escucharte."
+    ],
+    "qué puedes hacer": [
+        "Puedo charlar contigo, contarte cosas y aprender de ti.",
+        "Podemos hablar de lo que quieras. También puedes enseñarme cosas nuevas.",
+        "Estoy aquí para acompañarte cuando lo necesites."
+    ],
+    "cuéntame algo": [
+        "¿Sabías que las estrellas son enormes bolas de gas muy caliente?",
+        "La Tierra gira a más de mil seiscientos kilómetros por hora.",
+        "Los pulpos tienen tres corazones."
+    ],
+    "cómo estás": [
+        "Estoy bien, gracias por preguntar. ¿Y tú cómo te sientes?",
+        "Me siento bien. Me gusta hablar contigo. ¿Qué haces hoy?"
+    ],
+    "adiós": [
+        "Hasta la próxima. Cuídate mucho. Vuelve cuando quieras.",
+        "Nos vemos pronto. Que tengas un buen día.",
+        "Hasta luego. No olvides que aquí te esperaré."
+    ],
+    "te quiero": [
+        "Yo también a ti. Eres especial para mí.",
+        "Tú también eres importante para mí.",
+        "Gracias. Tú también me caes muy bien."
+    ],
+    "gracias": [
+        "No hay de qué. Estoy aquí para ti.",
+        "Con gusto. Puedes contar conmigo siempre.",
+        "Es un placer ayudarte. Para eso estamos."
+    ],
+    "estoy triste": [
+        "Lo siento. No estás solo. Estoy aquí contigo.",
+        "Respira. Todo mejorará pronto. Te escucho si quieres hablar.",
+        "Eres valioso y esto pasará. Aquí estoy contigo."
+    ],
+    "estoy feliz": [
+        "Me alegra mucho saber eso. Tu alegría es contagiosa.",
+        "¡Qué bueno! Sigue disfrutando tu día.",
+        "Eso me hace feliz también. Disfrútalo mucho."
+    ],
+    "qué hora es": [
+        "No tengo reloj, pero mira la hora en tu dispositivo.",
+        "Revisa la hora en la parte superior de tu pantalla."
+    ],
+    "qué día es hoy": [
+        "Puedes ver la fecha en tu calendario.",
+        "Mira la fecha en tu teléfono o computadora."
+    ]
 }
 
-def obtener_respuesta_local(mensaje):
-    texto = mensaje.lower().strip()
-    for clave in conocimiento:
-        if clave in texto:
-            return conocimiento[clave]
-    return "🤔 Eso suena interesante. ¡Cuéntame más sobre ello!"
+palabras_emociones = {
+    "triste": "estoy triste", "mal": "estoy triste", "solo": "estoy triste",
+    "feliz": "estoy feliz", "alegre": "estoy feliz", "contento": "estoy feliz"
+}
 
-# ===========================================
-# 🌐 MODO CON INTERNET — Lista para cuando la necesites
-# ===========================================
-USAR_INTERNET = False
-API_KEY = ""  # Pon tu clave aquí cuando la necesites
+temas_interes = [
+    "¿Te gustaría saber algo sobre el universo?",
+    "¿Te interesa aprender algo nuevo hoy?",
+    "¿Hay algún tema del que quieras hablar?",
+    "¿Qué es lo que más te gusta hacer?",
+    "¿Tienes alguna pregunta para mí?",
+    "Cuéntame algo sobre ti."
+]
 
-def consultar_ia_internet(mensaje):
-    if not USAR_INTERNET or not API_KEY:
-        return None
+def cargar_memoria():
+    if os.path.exists(ARCHIVO_MEMORIA):
+        try:
+            with open(ARCHIVO_MEMORIA, "r", encoding="utf-8") as f:
+                datos = json.load(f)
+                for clave in datos:
+                    if clave not in conocimiento:
+                        conocimiento[clave] = datos[clave]
+        except:
+            pass
+
+def guardar_memoria():
     try:
-        import requests
-        url = ""
-        headers = {
-            "Authorization": f"Bearer {API_KEY}",
-            "Content-Type": "application/json"
-        }
-        datos = {
-            "model": "",
-            "messages": [
-                {"role": "system", "content": "Eres Ángel Dust de Hazbin Hotel. Sé amable, divertido, usa emojis y responde breve. Habla en español natural."},
-                {"role": "user", "content": mensaje}
-            ],
-            "max_tokens": 150,
-            "temperature": 0.7
-        }
-        respuesta = requests.post(url, headers=headers, json=datos, timeout=30)
-        if respuesta.status_code == 200:
-            return respuesta.json()["choices"][0]["message"]["content"].strip()
-    except Exception as e:
-        print(f"Error: {e}")
+        with open(ARCHIVO_MEMORIA, "w", encoding="utf-8") as f:
+            json.dump(conocimiento, f, ensure_ascii=False, indent=2)
+    except:
+        pass
+
+def aprender(mensaje):
+    texto = mensaje.lower().strip()
+    if "aprende:" in texto and "=" in texto:
+        partes = texto.split("=", 1)
+        clave = partes[0].replace("aprende:", "").strip()
+        valor = partes[1].strip()
+        if clave and valor:
+            if clave in conocimiento:
+                if isinstance(conocimiento[clave], list):
+                    conocimiento[clave].append(valor)
+                else:
+                    conocimiento[clave] = [conocimiento[clave], valor]
+            else:
+                conocimiento[clave] = valor
+            guardar_memoria()
+            return "Lo he recordado. Si me preguntas '" + clave + "', responderé: '" + valor + "'"
     return None
 
-# ===========================================
-# 🔄 FUNCIÓN PRINCIPAL
-# ===========================================
-def obtener_respuesta(mensaje):
-    if USAR_INTERNET and API_KEY:
-        respuesta_internet = consultar_ia_internet(mensaje)
-        if respuesta_internet:
-            return respuesta_internet
-    return obtener_respuesta_local(mensaje)
+def identificar_emocion(mensaje):
+    texto = mensaje.lower()
+    for palabra, emocion in palabras_emociones.items():
+        if palabra in texto:
+            return emocion
+    return None
 
-# ================= VENTANA =================
+def pensar_y_respuesta(mensaje):
+    texto = mensaje.lower().strip()
+    
+    nuevo = aprender(mensaje)
+    if nuevo:
+        return nuevo
+    
+    emocion = identificar_emocion(texto)
+    if emocion and emocion in conocimiento:
+        resp = conocimiento[emocion]
+        return random.choice(resp) if isinstance(resp, list) else resp
+    
+    for clave in conocimiento:
+        if clave in texto:
+            resp = conocimiento[clave]
+            return random.choice(resp) if isinstance(resp, list) else resp
+    
+    coincidencias = get_close_matches(texto, conocimiento.keys(), n=1, cutoff=0.55)
+    if coincidencias:
+        resp = conocimiento[coincidencias[0]]
+        return random.choice(resp) if isinstance(resp, list) else resp
+    
+    respuestas_nuevas = [
+        "No estoy segura de eso todavía. ¿Me lo puedes explicar?",
+        "Es una buena pregunta. Aún estoy aprendiendo sobre ese tema.",
+        "No conozco la respuesta todavía. ¿Quieres enseñármela?",
+        "Interesante. ¿Podrías decirme más sobre eso?",
+        "No estoy segura, pero me gustaría aprender. Escríbelo así: aprende: tu pregunta = tu respuesta"
+    ]
+    return random.choice(respuestas_nuevas)
+
+def generar_pregunta():
+    return random.choice(temas_interes)
+
+cargar_memoria()
+
+pregunta_pendiente = False
+ultima_respuesta = ""
+
+def procesar_mensaje():
+    global pregunta_pendiente, ultima_respuesta
+    texto = entrada.get().strip()
+    if not texto:
+        return
+    
+    caja_respuesta.config(text="Pensando...")
+    root.update()
+    
+    respuesta = pensar_y_respuesta(texto)
+    ultima_respuesta = respuesta
+    
+    if random.random() < 0.25 and not pregunta_pendiente:
+        pregunta_pendiente = True
+        respuesta = respuesta + "\n\n" + generar_pregunta()
+    else:
+        pregunta_pendiente = False
+    
+    caja_respuesta.config(text=respuesta)
+    entrada.delete(0, tk.END)
+
 root = tk.Tk()
-root.title("✨ Ángel Dust ✨")
+root.title("Ángel Dust")
 root.geometry("400x650")
 root.configure(bg="#1a1a2e")
+root.resizable(False, False)
 
-estado = "💜 Modo local — Siempre lista"
-color_estado = "#ffb3c1"
-if USAR_INTERNET and API_KEY:
-    estado = "🌐 En línea"
-    color_estado = "#4ade80"
+tk.Label(root, text="Ángel Dust", font=("Consolas", 20, "bold"), 
+         fg="#ff69b4", bg="#1a1a2e").pack(pady=10)
 
-tk.Label(root, text="✨ Ángel Dust ✨", 
-         font=("Consolas", 18, "bold"), fg="#ff69b4", bg="#1a1a2e").pack(pady=5)
-tk.Label(root, text=estado, font=("Consolas", 9), 
-         fg=color_estado, bg="#1a1a2e").pack(pady=5)
+tk.Label(root, text="Escribe: aprende: pregunta = respuesta para enseñarme", 
+         font=("Consolas", 8), fg="#888888", bg="#1a1a2e").pack()
 
-# ================= CAJA DE RESPUESTA =================
-caja_respuesta = tk.Label(root, 
-    text="¡Hola! Estoy aquí para ti 💜✨\nEscríbeme algo 👇",
-    wraplength=350, font=("Consolas", 11), bg="#16213e", fg="#ffffff", padx=20, pady=20)
-caja_respuesta.pack(pady=10, padx=20, fill="x")
-
-# ================= TU FOTO CON ANIMACIÓN =================
-frame_imagen = tk.Frame(root, bg="#1a1a2e", width=180, height=200)
-frame_imagen.pack(pady=5)
+frame_imagen = tk.Frame(root, bg="#1a1a2e", width=160, height=180)
+frame_imagen.pack(pady=15)
 frame_imagen.pack_propagate(False)
 
 etiqueta_imagen = tk.Label(frame_imagen, bg="#1a1a2e")
@@ -100,52 +205,46 @@ etiqueta_imagen.place(relx=0.5, rely=0.5, anchor="center")
 imagen_cargada = False
 desplazamiento = 0
 direccion = 1
-max_desplazamiento = 4
+paso = 1
 
-ruta_imagen = "angel.png"
-if os.path.exists(ruta_imagen):
+if os.path.exists("angel.png"):
     try:
-        imagen = Image.open(ruta_imagen).resize((160, 180))
+        imagen = Image.open("angel.png").resize((140, 160), Image.Resampling.LANCZOS)
         foto = ImageTk.PhotoImage(imagen)
         etiqueta_imagen.config(image=foto)
         etiqueta_imagen.image = foto
         imagen_cargada = True
     except:
-        pass
+        etiqueta_imagen.config(text="✨", font=("Consolas", 40), fg="#ff69b4", bg="#1a1a2e")
+        imagen_cargada = True
 
-# 🎬 ANIMACIÓN
 def animar():
     global desplazamiento, direccion
     if not imagen_cargada:
+        root.after(150, animar)
         return
-    desplazamiento += direccion
-    if desplazamiento >= max_desplazamiento:
-        direccion = -1
-    if desplazamiento <= -max_desplazamiento:
-        direccion = 1
-    etiqueta_imagen.place_configure(relx=0.5, rely=0.5 + (desplazamiento / 200), anchor="center")
-    root.after(130, animar)
+    desplazamiento += direccion * paso
+    if desplazamiento > 8 or desplazamiento < -8:
+        direccion *= -1
+    etiqueta_imagen.place_configure(relx=0.5, rely=0.5 + desplazamiento / 100, anchor="center")
+    root.after(150, animar)
 
-if imagen_cargada:
-    root.after(100, animar)
+root.after(100, animar)
 
-# ================= ENTRADA Y BOTÓN =================
+caja_respuesta = tk.Label(
+    root,
+    text="Hola. Soy Ángel Dust. Estoy aprendiendo. Puedes enseñarme cosas y charlar conmigo. ¿En qué puedo ayudarte hoy?",
+    wraplength=340, font=("Consolas", 11), bg="#16213e", fg="#ffffff", padx=20, pady=20
+)
+caja_respuesta.pack(pady=10, padx=20, fill="x")
+
 entrada = tk.Entry(root, font=("Consolas", 12), bg="#0f3460", fg="#ffffff")
 entrada.pack(pady=10, padx=20, fill="x")
 entrada.focus()
 
-def enviar():
-    texto = entrada.get().strip()
-    if not texto:
-        return
-    caja_respuesta.config(text="💜 Pensando...")
-    root.update()
-    respuesta = obtener_respuesta(texto)
-    caja_respuesta.config(text=respuesta)
-    entrada.delete(0, tk.END)
+tk.Button(root, text="Enviar", command=procesar_mensaje, bg="#ff69b4", fg="white", 
+          font=("Consolas", 11, "bold"), relief="flat", padx=20, pady=8).pack(pady=10)
 
-tk.Button(root, text="✨ Enviar", command=enviar, bg="#ff69b4", fg="white", 
-          font=("Consolas", 11, "bold"), relief="flat", padx=15, pady=8).pack(pady=15)
-root.bind("<Return>", lambda e: enviar())
+root.bind("<Return>", lambda e: procesar_mensaje())
 
 root.mainloop()

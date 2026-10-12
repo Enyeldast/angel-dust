@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Ángel Dust ✨</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Consolas', monospace;
+        }
+
+        body {
+            background: #1a1a2e;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #ff69b4;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .estado {
+            color: #ffb3c1;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        .imagen-container {
+            width: 180px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .imagen-avatar {
+            width: 160px;
+            height: 180px;
+            object-fit: contain;
+            animation: flotar 3s ease-in-out infinite;
+        }
+
+        @keyframes flotar {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .caja-mensaje {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 350px;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.6;
+        }
+
+        .entrada {
+            width: 100%;
+            max-width: 350px;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #0f3460;
+            color: #ffffff;
+            font-size: 16px;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .entrada::placeholder {
+            color: #888888;
+        }
+
+        .boton {
+            background: #ff69b4;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .boton:hover {
+            transform: scale(1.05);
+        }
+
+        .boton:active {
+            transform: scale(0.98);
+        }
+
+        .contenedor-boton {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>✨ Ángel Dust ✨</h1>
+    <p class="estado">💜 Siempre aquí para ti</p>
+
+    <div class="imagen-container">
+        <img src="angel.png" alt="Ángel Dust" class="imagen-avatar" onerror="this.src='https://via.placeholder.com/160x180/1a1a2e/ff69b4?text=✨Ángel+Dust✨'">
+    </div>
+
+    <div class="caja-mensaje" id="cajaMensaje">
+        ¡Hola! Estoy aquí para ti 💜✨<br>Escríbeme algo 👇
+    </div>
+
+    <input type="text" class="entrada" id="entradaMensaje" placeholder="Escribe aquí...">
+    
+    <div class="contenedor-boton">
+        <button class="boton" onclick="enviarMensaje()">✨ Enviar</button>
+    </div>
+
+    <script>
+        const conocimiento = {
+            "hola": "¡Holaaa! 😊 Soy Ángel Dust. ¿Cómo estás? ✨",
+            "quién eres": "Soy Ángel Dust, ¡tu asistente personal y amiga! 💖✨",
+            "qué puedes hacer": "¡Puedo charlar contigo, contarte chistes y acompañarte! 💖✨",
+            "cuéntame un chiste": "¿Qué le dice un semáforo a otro? ¡No me mires que me estoy cambiando! 😂✨",
+            "cómo estás": "¡Muy feliz de estar contigo! 💖✨ ¿Y tú qué tal?",
+            "adiós": "¡Hasta la próxima, amigo! 👋✨ ¡Vuelve pronto!",
+            "te quiero": "¡Yo también a ti! Eres increíble 💖✨",
+            "gracias": "¡No hay de qué! Estoy aquí para ti siempre 💜✨",
+            "qué es hazbin hotel": "¡Es mi mundo favorito! 🏨✨ Un lugar donde todos podemos ser nosotros mismos 💖"
+        };
+
+        function obtenerRespuesta(mensaje) {
+            const texto = mensaje.toLowerCase().trim();
+            for (const clave in conocimiento) {
+                if (texto.includes(clave)) {
+                    return conocimiento[clave];
+                }
+            }
+            return "🤔 Eso suena interesante. ¡Cuéntame más sobre ello!";
+        }
+
+        function enviarMensaje() {
+            const entrada = document.getElementById('entradaMensaje');
+            const cajaMensaje = document.getElementById('cajaMensaje');
+            const texto = entrada.value.trim();
+            
+            if (!texto) return;
+            
+            cajaMensaje.innerHTML = "💜 Pensando...";
+            
+            setTimeout(() => {
+                const respuesta = obtenerRespuesta(texto);
+                cajaMensaje.innerHTML = respuesta;
+                entrada.value = "";
+            }, 600);
+        }
+
+        document.getElementById('entradaMensaje').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') enviarMensaje();
+        });
+    </script>
+    
+</body>
+</html>
